@@ -24,11 +24,11 @@
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
             color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
             position: relative;
         }
 
-        /* --- YAN MENÜ (SIDEBAR) --- */
+        /* --- SIDEBAR (Gemini Style) --- */
         .sidebar {
             position: fixed;
             left: -320px;
@@ -45,41 +45,13 @@
             gap: 30px;
         }
         .sidebar.active { left: 0; }
-        
         .sidebar-header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 5px; }
         .sidebar-header p { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text-dim); }
 
-        /* --- ÜST ÇUBUK VE HAMBURGER --- */
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1500;
-        }
-        .hamburger {
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            width: 30px;
-            transition: 0.3s;
-        }
-        .hamburger span {
-            display: block;
-            width: 100%;
-            height: 3px;
-            background: var(--text);
-            border-radius: 2px;
-            transition: 0.3s;
-        }
-        .hamburger:hover span { background: var(--accent); }
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; padding: 0 20px; z-index: 1500; }
+        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; width: 30px; }
+        .hamburger span { display: block; width: 100%; height: 3px; background: var(--text); border-radius: 2px; }
 
-        /* --- MÜZİK İKONU --- */
         .audio-controls { position: fixed; top: 15px; right: 20px; z-index: 1501; }
         .music-btn {
             background: rgba(255,255,255,0.05);
@@ -89,160 +61,106 @@
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
         }
 
         /* --- ANA İÇERİK --- */
         .container {
             max-width: 700px;
-            margin: 60px auto 0; /* Yukarı yaklaştırıldı */
+            margin: 80px auto 0;
             padding: 20px;
             position: relative;
             z-index: 1;
         }
 
-        .progress-container { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-top: auto; }
-        .progress-bar { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
-        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; }
-        .progress-text { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--text-dim); }
-
-        .card-container { min-height: 500px; position: relative; margin-top: 10px; }
+        .card-container { perspective: 1000px; min-height: 500px; }
         .card {
             background: var(--bg-secondary);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 40px var(--shadow);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px var(--shadow);
             width: 100%;
-            animation: slideIn 0.5s ease;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
             position: relative;
         }
 
-        /* --- SONRAKİ BUTONU (KUTUNUN İÇİNE ALINDI) --- */
-        .next-button-container {
-            margin-top: 25px;
-            display: none;
-            text-align: right;
+        /* --- YENİ ANİMASYONLAR --- */
+        .card.zoom-slow { transform: scale(1.08) translateY(-10px); }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) scale(1.08); }
+            20%, 60% { transform: translateX(-10px) scale(1.08); }
+            40%, 80% { transform: translateX(10px) scale(1.08); }
         }
-        .next-button-container.show { display: block; }
-        .next-button {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 30px;
-            color: white;
-            cursor: pointer;
-            font-family: 'Space Mono', monospace;
-            font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
-        }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
 
-        .question-text { font-size: 1.3rem; margin-bottom: 25px; line-height: 1.5; font-weight: 700; }
-        .options { display: flex; flex-direction: column; gap: 10px; }
+        .question-text { font-size: 1.4rem; margin-bottom: 30px; line-height: 1.6; font-weight: 700; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
         .option {
             background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 18px 24px;
             cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            transition: 0.3s;
+            display: flex; align-items: center; gap: 15px;
         }
-        .option:hover:not(.disabled) { background: rgba(255,255,255,0.07); border-color: var(--accent); }
-        .option.reveal-correct { background: rgba(78,205,196,0.2) !important; border-color: var(--correct) !important; }
-        .option.reveal-wrong { background: rgba(255,107,107,0.2) !important; border-color: var(--wrong) !important; }
+        .option:hover:not(.disabled) { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+        .option.reveal-correct { 
+            background: rgba(78, 205, 196, 0.3) !important; 
+            border-color: var(--correct) !important;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+        }
+        .option.reveal-wrong { 
+            background: rgba(255, 107, 107, 0.3) !important; 
+            border-color: var(--wrong) !important;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+        }
         .option.disabled { pointer-events: none; }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Overlay for sidebar */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            z-index: 1900;
+        .next-button-container { margin-top: 30px; display: none; text-align: right; }
+        .next-button-container.show { display: block; animation: fadeIn 0.5s; }
+        .next-button {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            border: none; border-radius: 12px; padding: 14px 35px;
+            color: white; cursor: pointer; font-family: 'Space Mono'; font-weight: 700;
         }
-        .overlay.active { display: block; }
 
-        @media (max-width: 600px) { .sidebar { width: 85%; } }
+        .progress-container { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-top: auto; }
+        .progress-bar { background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 1900; }
+        .overlay.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="overlay" id="overlay"></div>
-    
-    <div class="top-bar">
-        <div class="hamburger" id="hamburger">
-            <span></span><span></span><span></span>
-        </div>
-    </div>
+    <div class="top-bar"><div class="hamburger" id="hamburger"><span></span><span></span><span></span></div></div>
 
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h1>Türk Kültür Tarihi</h1>
-            <p>100 SORULUK ETKİLEŞİMLİ SINAV</p>
+        <div class="sidebar-header"><h1>Türk Kültür Tarihi</h1><p>100 SORULUK SINAV</p></div>
+        <div style="font-family:'Space Mono'; font-size:0.9rem;">
+            <div style="color:var(--correct); margin-bottom:5px;">Doğru: <span id="correctCount">0</span></div>
+            <div style="color:var(--wrong);">Yanlış: <span id="wrongCount">0</span></div>
         </div>
-        
-        <div class="sidebar-stats">
-            <p style="margin-bottom:10px; font-family:'Space Mono'; font-size:0.9rem;">Puan Durumu</p>
-            <div style="display:flex; justify-content:space-between; color:var(--correct);">Doğru: <span id="correctCount">0</span></div>
-            <div style="display:flex; justify-content:space-between; color:var(--wrong);">Yanlış: <span id="wrongCount">0</span></div>
-        </div>
-
         <div class="progress-container">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="progress-text" id="questionProgress">Soru 1 / 100</div>
+            <div class="progress-text" id="questionProgress" style="font-size:0.75rem; color:var(--text-dim);">Soru 1 / 100</div>
         </div>
     </div>
 
-    <div class="audio-controls">
-        <button id="musicToggle" class="music-btn">🎵</button>
-    </div>
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
+    <div class="audio-controls"><button id="musicToggle" class="music-btn">🎵</button></div>
+    
+    <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+    <audio id="correctSound"><source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg"></audio>
+    <audio id="wrongSound"><source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg"></audio>
 
-    <div class="container">
-        <div id="cardContainer" class="card-container"></div>
-    </div>
+    <div class="container"><div id="cardContainer" class="card-container"></div></div>
 
     <script>
-        // Sidebar Toggle
-        const hamburger = document.getElementById('hamburger');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-
-        function toggleMenu() {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
-        hamburger.addEventListener('click', toggleMenu);
-        overlay.addEventListener('click', toggleMenu);
-
-        // Music Logic
-        const music = document.getElementById('bgMusic');
-        const musicBtn = document.getElementById('musicToggle');
-        let isPlaying = false;
-
-        function playMusic() {
-            music.play();
-            musicBtn.textContent = '🔇';
-            isPlaying = true;
-        }
-        musicBtn.addEventListener('click', () => {
-            if (isPlaying) { music.pause(); musicBtn.textContent = '🎵'; }
-            else { playMusic(); }
-            isPlaying = !isPlaying;
-        });
-        window.addEventListener('click', () => { if(!isPlaying) playMusic(); }, { once: true });
-
-        // 100 Soruluk Veri Seti
         const questions = [
             { question: "Türklerin İslamiyet öncesi inandıkları din hangisidir?", options: ["Şamanizm", "Gök Tanrı (Tengri) İnancı", "Budizm", "Hristiyanlık", "Zerdüştlük"], correct: 1 },
             { question: "Talas Savaşı hangi yıl gerçekleşmiştir?", options: ["650", "751", "850", "950", "1050"], correct: 1 },
@@ -352,6 +270,30 @@
         let selectedOption = null;
         let isAnswered = false;
 
+        // UI Elementleri
+        const music = document.getElementById('bgMusic');
+        const correctSound = document.getElementById('correctSound');
+        const wrongSound = document.getElementById('wrongSound');
+        const musicBtn = document.getElementById('musicToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const hamburger = document.getElementById('hamburger');
+
+        // Sidebar Mantığı
+        function toggleMenu() { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); }
+        hamburger.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Müzik Mantığı
+        let isPlaying = false;
+        function playBGM() { music.play(); musicBtn.textContent = '🔇'; isPlaying = true; }
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) { music.pause(); musicBtn.textContent = '🎵'; }
+            else { playBGM(); }
+            isPlaying = !isPlaying;
+        });
+        window.addEventListener('click', () => { if(!isPlaying) playBGM(); }, { once: true });
+
         function updateProgress() {
             const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
@@ -369,7 +311,7 @@
                 <div class="options">
                     ${question.options.map((option, i) => `
                         <div class="option" data-index="${i}">
-                            <span style="font-family:'Space Mono'; font-weight:700; color:var(--accent);">${String.fromCharCode(65 + i)}</span>
+                            <span style="font-family:'Space Mono'; color:var(--accent); font-weight:700;">${String.fromCharCode(65 + i)}</span>
                             <span>${option}</span>
                         </div>
                     `).join('')}
@@ -378,48 +320,59 @@
                     <button class="next-button" id="nextButton">Sonraki Soru →</button>
                 </div>
             `;
-            
             card.querySelectorAll('.option').forEach(option => {
                 option.addEventListener('click', () => handleOptionClick(option, card, question));
             });
-
             return card;
         }
 
         function handleOptionClick(clickedOption, card, question) {
             if (isAnswered) return;
-            selectedOption = parseInt(clickedOption.dataset.index);
-            revealAnswer(card, question);
-        }
-
-        function revealAnswer(card, question) {
             isAnswered = true;
-            const options = card.querySelectorAll('.option');
-            options.forEach(opt => opt.classList.add('disabled'));
-            options[question.correct].classList.add('reveal-correct');
-
-            if (selectedOption !== question.correct) {
-                options[selectedOption].classList.add('reveal-wrong');
-                wrongAnswers++;
-            } else {
-                correctAnswers++;
-            }
-            updateProgress();
             
-            const btnContainer = card.querySelector('#nextButtonContainer');
-            btnContainer.classList.add('show');
-            btnContainer.querySelector('#nextButton').addEventListener('click', nextQuestion);
+            // YAVAŞÇA YAKLAŞMA ANİMASYONU
+            card.classList.add('zoom-slow');
+
+            selectedOption = parseInt(clickedOption.dataset.index);
+            const isCorrect = selectedOption === question.correct;
+
+            // CEVABI GÖSTERME (Hafif gecikmeli animasyon için)
+            setTimeout(() => {
+                const options = card.querySelectorAll('.option');
+                options.forEach(opt => opt.classList.add('disabled'));
+                options[question.correct].classList.add('reveal-correct');
+
+                if (isCorrect) {
+                    correctSound.play();
+                    correctAnswers++;
+                } else {
+                    wrongSound.play();
+                    clickedOption.classList.add('reveal-wrong');
+                    card.classList.add('shake'); // YANLIŞSA TİTREME
+                    wrongAnswers++;
+                }
+
+                updateProgress();
+                const btnContainer = card.querySelector('#nextButtonContainer');
+                btnContainer.classList.add('show');
+                btnContainer.querySelector('#nextButton').addEventListener('click', nextQuestion);
+            }, 500);
         }
 
         function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                const container = document.getElementById('cardContainer');
-                container.innerHTML = '';
-                showQuestion();
-            } else {
-                showResults();
-            }
+            const currentCard = document.querySelector('.card');
+            currentCard.style.opacity = '0';
+            currentCard.style.transform = 'translateX(-100px)';
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    document.getElementById('cardContainer').innerHTML = '';
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 300);
         }
 
         function showQuestion() {
@@ -433,10 +386,10 @@
             const perc = Math.round((correctAnswers / questions.length) * 100);
             document.getElementById('cardContainer').innerHTML = `
                 <div class="card" style="text-align:center;">
-                    <h2 style="color:var(--correct); margin-bottom:20px;">Quiz Tamamlandı! 🎉</h2>
+                    <h2 style="color:var(--correct); margin-bottom:20px;">Harika Bir İş Çıkardın! 🎉</h2>
                     <p style="font-size:1.2rem; margin-bottom:10px;">Doğru: ${correctAnswers}</p>
                     <p style="font-size:1.2rem; margin-bottom:10px;">Yanlış: ${wrongAnswers}</p>
-                    <p style="font-size:1.5rem; color:var(--accent); font-weight:700;">Başarı: %${perc}</p>
+                    <p style="font-size:1.5rem; color:var(--accent); font-weight:700;">Başarı Oranı: %${perc}</p>
                     <button class="next-button" onclick="location.reload()" style="margin-top:20px; float:none;">Yeniden Başla</button>
                 </div>
             `;
