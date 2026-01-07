@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Türk Kültür Tarihi Quiz</title>
+    <title>Türk Kültür Tarihi - 100 Soru</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,8 +23,9 @@
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
             color: var(--text);
             min-height: 100vh;
-            overflow: hidden;
-            position: relative;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
         }
 
         /* --- SIDEBAR (Gemini Stili) --- */
@@ -41,22 +42,18 @@
             box-shadow: 10px 0 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 20px;
         }
         .sidebar.active { left: 0; }
-        .sidebar-header h1 { font-size: 1.5rem; color: var(--accent); }
+        .sidebar-header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 20px; }
 
-        .top-bar { position: fixed; top: 0; left: 0; padding: 15px 20px; z-index: 1500; }
+        /* Üst Çubuk */
+        .top-bar { position: fixed; top: 0; left: 0; padding: 15px 20px; z-index: 1500; width: 100%; display: flex; align-items: center; }
         .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; width: 30px; }
         .hamburger span { display: block; width: 100%; height: 3px; background: var(--text); border-radius: 2px; }
 
-        /* --- ANA KONTEYNER --- */
-        .container {
-            max-width: 650px;
-            margin: 40px auto 0; /* Ekrana yaklaştırıldı */
-            padding: 20px;
-            transition: transform 0.8s ease;
-        }
+        /* Ana Konteyner */
+        .container { width: 100%; max-width: 650px; margin-top: 80px; padding: 20px; perspective: 1000px; }
 
         /* --- KART VE ANİMASYONLAR --- */
         .card {
@@ -64,25 +61,25 @@
             border-radius: 24px;
             padding: 35px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* YAVAŞ YAKLAŞMA SÜRESİ */
             position: relative;
-            z-index: 10;
         }
 
-        /* Soruya Yaklaşma (Zoom) Etkisi */
-        .zoom-effect { transform: scale(1.12) translateY(20px); }
+        /* İSTEDİĞİN YAKLAŞMA (ZOOM) ETKİSİ */
+        .zoom-in { transform: scale(1.1) translateZ(50px); }
 
-        /* Yanlış Cevap Titreme Etkisi */
+        /* İSTEDİĞİN TİTREME ANİMASYONU */
         @keyframes shake {
-            0%, 100% { transform: translateX(0) scale(1.12); }
-            25% { transform: translateX(-15px) scale(1.12); }
-            50% { transform: translateX(15px) scale(1.12); }
-            75% { transform: translateX(-15px) scale(1.12); }
+            0%, 100% { transform: scale(1.1) translateX(0); }
+            20% { transform: scale(1.1) translateX(-15px); }
+            40% { transform: scale(1.1) translateX(15px); }
+            60% { transform: scale(1.1) translateX(-15px); }
+            80% { transform: scale(1.1) translateX(15px); }
         }
-        .shake-effect { animation: shake 0.4s ease-in-out; }
+        .shake-effect { animation: shake 0.5s ease-in-out; }
 
-        .question-text { font-size: 1.4rem; margin-bottom: 25px; font-weight: 700; line-height: 1.4; }
-        .options { display: flex; flex-direction: column; gap: 12px; }
+        .question-text { font-size: 1.35rem; margin-bottom: 25px; font-weight: 700; line-height: 1.5; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
         .option {
             background: rgba(255,255,255,0.03);
             border: 2px solid rgba(255,255,255,0.1);
@@ -92,143 +89,257 @@
             transition: 0.3s;
             display: flex; align-items: center; gap: 12px;
         }
+        .option.correct-choice { background: var(--correct) !important; color: #0a0e27; font-weight: 700; }
+        .option.wrong-choice { background: var(--wrong) !important; color: white; }
+        .option.disabled { pointer-events: none; opacity: 0.7; }
 
-        .option.reveal-correct { 
-            background: var(--correct) !important; 
-            color: #0a0e27; 
-            border-color: var(--correct); 
-            font-weight: 700;
-        }
-        .option.reveal-wrong { 
-            background: var(--wrong) !important; 
-            color: white; 
-            border-color: var(--wrong); 
-        }
-        .option.disabled { pointer-events: none; }
-
-        .next-button-container { margin-top: 25px; text-align: right; display: none; }
-        .next-button-container.show { display: block; }
-        .next-button {
-            background: var(--accent); border: none; padding: 12px 30px; 
-            color: white; border-radius: 10px; cursor: pointer; font-weight: 700;
-        }
+        .next-btn-box { margin-top: 25px; text-align: right; display: none; }
+        .next-btn-box.show { display: block; }
+        .next-button { background: var(--accent); border: none; padding: 12px 30px; color: white; border-radius: 10px; cursor: pointer; font-weight: 700; }
 
         .audio-controls { position: fixed; top: 15px; right: 20px; z-index: 1501; }
         .music-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--accent); background: none; color: white; cursor: pointer; }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1900; }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="overlay" onclick="toggleMenu()" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:1900;"></div>
+    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
     <div class="top-bar">
         <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
     </div>
 
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><h1>Menü</h1></div>
-        <div style="margin-top:20px; font-family:'Space Mono';">
-            <p>Doğru: <span id="correctCount">0</span></p>
-            <p>Yanlış: <span id="wrongCount">0</span></p>
-            <p id="questionProgress" style="margin-top:10px; color:var(--text-dim);">Soru 1 / 100</p>
+        <div class="sidebar-header"><h1>İstatistikler</h1></div>
+        <div style="font-family:'Space Mono';">
+            <p style="color:var(--correct); margin-bottom:10px;">Doğru: <span id="cCount">0</span></p>
+            <p style="color:var(--wrong); margin-bottom:20px;">Yanlış: <span id="wCount">0</span></p>
+            <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-bottom:10px;">
+                <div id="pBar" style="background:var(--accent); height:100%; width:0%; transition:0.3s;"></div>
+            </div>
+            <p id="qStatus" style="color:var(--text-dim); font-size:0.8rem;">Soru: 1 / 100</p>
         </div>
     </div>
 
-    <div class="audio-controls"><button id="musicToggle" class="music-btn">🎵</button></div>
+    <div class="audio-controls"><button id="mBtn" class="music-btn">🎵</button></div>
 
-    <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
-    <audio id="correctSound"><source src="https://actions.google.com/sounds/v1/water/clinking_glasses.ogg"></audio>
-    <audio id="wrongSound"><source src="https://actions.google.com/sounds/v1/emergency/beep_short.ogg"></audio>
+    <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    <audio id="sfxC"><source src="https://actions.google.com/sounds/v1/water/clinking_glasses.ogg"></audio>
+    <audio id="sfxW"><source src="https://actions.google.com/sounds/v1/emergency/beep_short.ogg"></audio>
 
-    <div class="container" id="mainContainer">
-        <div id="cardContainer"></div>
-    </div>
+    <div class="container" id="quizContainer"></div>
 
     <script>
-        // 100 SORU VERİSİ (Kısaltılmış örnek, tümü koda dahil edildi)
         const questions = [
             { question: "Türklerin İslamiyet öncesi inandıkları din hangisidir?", options: ["Şamanizm", "Gök Tanrı (Tengri) İnancı", "Budizm", "Hristiyanlık", "Zerdüştlük"], correct: 1 },
             { question: "Talas Savaşı hangi yıl gerçekleşmiştir?", options: ["650", "751", "850", "950", "1050"], correct: 1 },
             { question: "Talas Savaşı'nda Türkler hangi tarafta yer almıştır?", options: ["Tang Hanedanı yanında", "Abbasiler yanında", "Tarafsız kalmışlardır", "Her iki tarafta da", "Bizans yanında"], correct: 1 },
             { question: "Talas Savaşı'nın karşı tarafları kimlerdir?", options: ["Abbasiler - Bizans", "Abbasiler - Tang Hanedanı", "Göktürkler - Çin", "Selçuklular - Bizans", "Karahanlılar - Gazneliler"], correct: 1 },
             { question: "İslamiyet'in Türkler arasında yayılmasını kolaylaştıran dini unsurlardan biri hangisidir?", options: ["Beş vakit namaz", "Hac ibadeti", "Tek Tanrı inancı", "Oruç", "Zekat"], correct: 2 },
-            // ... (Tüm 100 soru buraya gelecek - Alan tasarrufu için kısa tutuldu)
+            { question: "Abbasi Devleti'nde Türk köle askerlere ne ad verilirdi?", options: ["Yeniçeri", "Sipahi", "Ghilman", "Fedai", "Memluk"], correct: 2 },
+            { question: "Türklerin İslamiyet'i kabulünde ekonomik unsurlardan hangisi EN az etkili olmuştur?", options: ["Zekat sistemi", "Ticaret yolları kontrolü", "Toprak imtiyazları", "Para ekonomisi", "Hepsi eşit derecede etkilidir"], correct: 4 },
+            { question: "Gök Tanrı inancında Tanrı nasıl bir varlıktır?", options: ["Somut, görülebilir", "Soyut, görünmez", "İnsan biçiminde", "Hayvan biçiminde", "Doğa olaylarının toplamı"], correct: 1 },
+            { question: "İslam'ın 'ümmet' kavramı Türklerin hangi geleneğine benzemektedir?", options: ["Toy geleneği", "Boylar arası birlik", "Kurultay", "Oğuz Kağan destanı", "Töre sistemi"], correct: 1 },
+            { question: "Türkler İslamiyet'i kabul etmeden önce hangi ticaret yolunu kontrol edemiyorlardı?", options: ["İpek Yolu", "Kürk Yolu", "Orman Yolu", "Step Yolu", "Baharat Yolu"], correct: 0 },
+            { question: "Talas Savaşı'nda hangi Türk boyu Abbasi tarafında yer almıştır?", options: ["Oğuzlar", "Karluklar", "Kıpçaklar", "Peçenekler", "Hazarlar"], correct: 1 },
+            { question: "Talas Savaşı'nın bir sonucu olarak hangi bilgi Avrupa'ya yayılmıştır?", options: ["Matbaa", "Barut", "Kağıt yapımı", "Pusula", "İpek dokuma"], correct: 2 },
+            { question: "Gök Tanrı inancında öldükten sonra iyi ruhlar nereye gider?", options: ["Yeraltına", "Göğe/Yukarı", "Bir başka bedene", "Yok olur", "Dünyada kalır"], correct: 1 },
+            { question: "İslam'ın cihad kavramı Türklerin hangi anlayışıyla örtüşmüştür?", options: ["Toy", "Gaza", "Kurultay", "Töre", "Yağma"], correct: 1 },
+            { question: "Abbasi Devleti Türk askerlerini hangi bölgelerde iskân etmiştir?", options: ["Hicaz", "Mısır", "Horasan ve Maveraünnehir", "Endülüs", "Kuzey Afrika"], correct: 2 },
+            { question: "İslamiyet'te ahiret inancı Türklerin hangi inancına benzemektedir?", options: ["Reenkarnasyon", "Öte dünya inancı", "Ataların ruhu", "Doğa tapınması", "Totemizm"], correct: 1 },
+            { question: "Türklerin toygun (şölen) geleneği İslam'ın hangi kurumuyla benzerlik gösterir?", options: ["Hac", "Ramazan", "Zekat sistemi", "Kurban", "Namaz"], correct: 2 },
+            { question: "Abbasi Devleti'nde Türk köle askerler hangi yüzyıldan itibaren önem kazanmıştır?", options: ["7. yüzyıl", "8. yüzyıl", "9. yüzyıl", "10. yüzyıl", "11. yüzyıl"], correct: 1 },
+            { question: "İslam'da halife-sultan sistemi Türklerin hangi anlayışına benzemektedir?", options: ["Şaman otoritesi", "Kağan otoritesi", "Boy beyi sistemi", "Kurultay kararları", "Demokratik seçim"], correct: 1 },
+            { question: "Türklerde put tapınması var mıydı?", options: ["Evet, yaygındı", "Hayır, yoktu", "Sadece bazı boylarda", "Çin etkisiyle başladı", "Hint etkisiyle başladı"], correct: 1 },
+            { question: "İlk toplu olarak İslamiyet'i kabul eden Türk boyu hangisidir?", options: ["Oğuzlar", "Karluklar", "Kıpçaklar", "Peçenekler", "Bulgarlar"], correct: 1 },
+            { question: "Türklerin töre anlayışı İslam'ın hangi kavramıyla uyumludur?", options: ["Şeriat", "Tarikat", "Hakikat", "Ahlaki değerler", "Fıkıh"], correct: 3 },
+            { question: "Talas Savaşı hangi bölgede gerçekleşmiştir?", options: ["Anadolu", "Orta Asya", "Arabistan", "Hindistan", "Mısır"], correct: 1 },
+            { question: "Abbasi politikalarında Türklere hangi unvan verilmeye başlanmıştır?", options: ["Kağan", "Sultan", "Halife", "Emir", "Vezir"], correct: 1 },
+            { question: "İslamiyet'in Türkler arasında yayılış şekli nasıldır?", options: ["Tamamen zorla", "Çoğunlukla gönüllü ve ikna ile", "Sadece savaşlarla", "Ticaret yoluyla", "Evliliklerle"], correct: 1 },
+            { question: "Gök Tanrı inancında cennet-cehennem kavramı var mıydı?", options: ["Hayır, hiç yoktu", "Benzer bir kavram vardı", "Tamamen aynıydı", "Sadece cennet vardı", "Sadece cehennem vardı"], correct: 1 },
+            { question: "Türklerin İslamiyet'i kabulünde hangi sosyal unsur EN etkili olmuştur?", options: ["Köleler arası eşitlik", "Kadın-erkek eşitliği", "Kavim-soy ayrımının olmaması", "Dil birliği", "Coğrafi yakınlık"], correct: 2 },
+            { question: "Abbasiler Türklere neden toprak imtiyazları vermiştir?", options: ["Zorla aldılar", "Müslüman olmalarını teşvik için", "Ticaret için", "Savaş ganimetiydi", "Rastgele dağıtıldı"], correct: 1 },
+            { question: "Türklerin savaşçı kültürü İslam'ın hangi kavramıyla uyumlu olmuştur?", options: ["Sulh (barış)", "Cihad", "Hicret", "Zühd", "Tevekkül"], correct: 1 },
+            { question: "İpek Yolu'nu Talas Savaşı'ndan önce kimler kontrol ediyordu?", options: ["Türkler", "Çin ve Araplar", "Bizans", "Moğollar", "Persler"], correct: 1 },
+            { question: "İlk Müslüman Türk devleti hangisidir?", options: ["Göktürk Devleti", "Karahanlılar", "Gazneliler", "Selçuklular", "Osmanlılar"], correct: 1 },
+            { question: "Karahanlılar hangi yüzyılda kurulmuştur?", options: ["8. yüzyıl", "9. yüzyıl", "10. yüzyıl", "11. yüzyıl", "12. yüzyıl"], correct: 2 },
+            { question: "Satuk Buğra Han ne zaman resmen Müslüman olduğunu ilan etmiştir?", options: ["920", "940", "960", "980", "1000"], correct: 2 },
+            { question: "Türklerin İslamiyet'e geçişinde mezhep esnekliği ne anlama gelir?", options: ["Zorunlu mezhep seçimi", "Kendi kültürleriyle harmanlama izni", "Tek mezhep dayatması", "Mezhepsiz İslam", "Sünni-Şii ayrımı"], correct: 1 },
+            { question: "Gök Tanrı inancında Tanrı'ya nasıl ibadet edilirdi?", options: ["Putlara tapınarak", "Doğa güçlerine dua ederek", "Göğe dua ederek", "Ateşe tapınarak", "Suya tapınarak"], correct: 2 },
+            { question: "İslam dünyasında Türk askerlerinin önemi neden artmıştır?", options: ["Sadece sayıları fazlaydı", "Askeri yetenekleri ve sadakatleri", "Zengin oldukları için", "Arap değildiler", "Çin'i tanıyorlardı"], correct: 1 },
+            { question: "Abbasi Devleti hangi yılda kurulmuştur?", options: ["650", "700", "750", "800", "850"], correct: 2 },
+            { question: "Türklerin İslamiyet'i kabulünde 'para ekonomisi' neden önemliydi?", options: ["Altın buldular", "Gelişmiş para sistemi cazipti", "Ticaret yasaktı", "Faiz yoktu", "Zekat vermek zorundaydılar"], correct: 1 },
+            { question: "Orta Asya'nın Çin etkisinden çıkması hangi savaşın sonucudur?", options: ["Yarmuk Savaşı", "Malazgirt Savaşı", "Talas Savaşı", "Miryokefalon Savaşı", "Kösedağ Savaşı"], correct: 2 },
+            { question: "Türk töresinde adalet, cesaret, dürüstlük gibi değerler İslam'ın hangi yönüyle uyumluydu?", options: ["İbadet şekilleri", "Ahlaki değerler", "Hukuk sistemi", "Ekonomi sistemi", "Siyasi yapı"], correct: 1 },
+            { question: "Ghilman sisteminde Türk gençleri nasıl eğitilirdi?", options: ["Tarım eğitimi", "Askeri ve yönetim eğitimi", "Ticaret eğitimi", "Din eğitimi", "Sanat eğitimi"], correct: 1 },
+            { question: "Türklerin 'kabile yapısı' İslam'ın hangi kavramına benziyordu?", options: ["Hilafet", "Ümmet birliği", "Mezhep", "Tarikat", "Cemaat"], correct: 1 },
+            { question: "İslamiyet'te putperestlik yasak olması Türkler için neden önemliydi?", options: ["Zaten put tapmıyorlardı", "Put yapmayı bilmiyorlardı", "Putları pahalıydı", "Çinliler put kullanıyordu", "Bizanslılar put kullanıyordu"], correct: 0 },
+            { question: "Talas Savaşı'ndan sonra hangi dönem başlamıştır?", options: ["Türklerin toplu İslamlaşması", "Göktürklerin yeniden yükselişi", "Çin'in Orta Asya hakimiyeti", "Moğol İstilası", "Haçlı Seferleri"], correct: 0 },
+            { question: "Abbasi Devleti Türklere hangi bölgelerde toprak vermiştir?", options: ["Merkezi Arabistan", "Sınır bölgeleri", "Şehir merkezleri", "Çöl bölgeleri", "Deniz kıyıları"], correct: 1 },
+            { question: "İslam'da 'eşitlik ilkesi' Türkler için neden çekiciydi?", options: ["Zengin olmak istiyorlardı", "Soy-kavim ayrımı yoktu", "Daha fazla köle alabiliyorlardı", "Vergi ödemek zorunda değillerdi", "Sadece Türkler eşitti"], correct: 1 },
+            { question: "Türklerin 'ikta sistemi' ile tanışması ne anlama gelir?", options: ["Kölelik sistemi", "Toprak tahsisi sistemi", "Ticaret sistemi", "Vergi sistemi", "Askerlik sistemi"], correct: 1 },
+            { question: "Gök Tanrı inancında 'iyi-kötü ayrımı' var mıydı?", options: ["Hayır, yoktu", "Evet, vardı", "Sadece iyilik vardı", "Sadece kötülük vardı", "Nötr bir anlayış vardı"], correct: 1 },
+            { question: "Türklerin İslamiyet'i kabulü kaç yüzyıl sürmüştür?", options: ["1 yüzyıl", "2-3 yüzyıl", "5 yüzyıl", "10 yüzyıl", "Hemen tamamı geçti"], correct: 1 },
+            { question: "Selçuklular hangi yüzyılda kurulmuştur?", options: ["9. yüzyıl", "10. yüzyıl", "11. yüzyıl", "12. yüzyıl", "13. yüzyıl"], correct: 2 },
+            { question: "Karamanoğulları Beyliği hangi yıllar arasında varlığını sürdürmüştür?", options: ["1243-1380", "1256-1487", "1300-1400", "1350-1500", "1400-1550"], correct: 1 },
+            { question: "Türkçeyi resmi dil ilan eden ilk beylik hangisidir?", options: ["Osmanlı Beyliği", "Karamanoğulları", "Germiyanoğulları", "Dulkadiroğulları", "Saruhanoğulları"], correct: 1 },
+            { question: "Karamanoğulları'nın başkenti hangisidir?", options: ["Balıkesir", "Manisa", "Konya", "Maraş", "Kütahya"], correct: 2 },
+            { question: "Dulkadiroğulları Beyliği hangi bölgede kurulmuştur?", options: ["Batı Anadolu", "İç Anadolu", "Güneydoğu Anadolu", "Karadeniz", "Ege"], correct: 2 },
+            { question: "Kütahya çinilerinin temelini hangi beylik atmıştır?", options: ["Karesioğulları", "Germiyanoğulları", "Saruhanoğulları", "Karamanoğulları", "Dulkadiroğulları"], correct: 1 },
+            { question: "Osmanlı'nın ilk donanmasını hangi beylik kurmuştur?", options: ["Saruhanoğulları", "Karesioğulları", "Aydınoğulları", "Menteşeoğulları", "Germiyanoğulları"], correct: 1 },
+            { question: "Saruhanoğulları'nın başkenti hangisidir?", options: ["Balıkesir", "Manisa", "İzmir", "Aydın", "Denizli"], correct: 1 },
+            { question: "Avlulu cami planını yaygınlaştıran beylik hangisidir?", options: ["Karamanoğulları", "Germiyanoğulları", "Saruhanoğulları", "Karesioğulları", "Dulkadiroğulları"], correct: 2 },
+            { question: "Dulkadiroğulları hangi iki güç arasında tampon beylik olmuştur?", options: ["Osmanlı - Bizans", "Osmanlı - Memluk", "Selçuklu - Bizans", "Karamanoğulları - Osmanlı", "İlhanlı - Memluk"], correct: 1 },
+            { question: "Karesioğulları Beyliği kaç yıl varlığını sürdürmüştür?", options: ["43 yıl", "63 yıl", "83 yıl", "103 yıl", "123 yıl"], correct: 1 },
+            { question: "En uzun ömürlü Anadolu beyliği hangisidir?", options: ["Osmanlı Beyliği", "Karamanoğulları", "Dulkadiroğulları", "Candaroğulları", "Germiyanoğulları"], correct: 1 },
+            { question: "Germiyanoğulları hangi mimari alanda ünlüdür?", options: ["Köprü yapımı", "Kale yapımı", "Çini ve ahşap sanatı", "Kervansaray yapımı", "Hamam yapımı"], correct: 2 },
+            { question: "Karamanoğlu Mehmet Bey hangi yıl Türkçeyi resmi dil ilan etmiştir?", options: ["1256", "1277", "1300", "1350", "1400"], correct: 1 },
+            { question: "Dulkadiroğulları'nda hangi mimari etki görülür?", options: ["Bizans etkisi", "Selçuklu etkisi", "Memluk etkisi", "Osmanlı etkisi", "İlhanlı etkisi"], correct: 2 },
+            { question: "Hatuniye Medresesi hangi beyliğe aittir?", options: ["Karamanoğulları", "Germiyanoğulları", "Dulkadiroğulları", "Karesioğulları", "Saruhanoğulları"], correct: 0 },
+            { question: "Elbistan Ulu Camii hangi beyliğe aittir?", options: ["Karamanoğulları", "Germiyanoğulları", "Dulkadiroğulları", "Karesioğulları", "Ramazanoğulları"], correct: 2 },
+            { question: "Manisa Ulu Camii hangi yılda inşa edilmiştir?", options: ["1300", "1336", "1366", "1400", "1450"], correct: 2 },
+            { question: "Karesioğulları Osmanlı'ya hangi padişah döneminde katılmıştır?", options: ["Osman Gazi", "Orhan Gazi", "I. Murad", "Yıldırım Bayezid", "I. Mehmed"], correct: 1 },
+            { question: "Dulkadiroğulları en son hangi Osmanlı padişahı tarafından alınmıştır?", options: ["II. Mehmed", "II. Bayezid", "Yavuz Sultan Selim", "Kanuni Sultan Süleyman", "II. Selim"], correct: 2 },
+            { question: "Germiyanoğulları Osmanlı'ya nasıl katılmıştır?", options: ["Savaşla", "Evlilik yoluyla", "Satın alma ile", "Zorla", "Antlaşma ile"], correct: 1 },
+            { question: "Karamanoğulları'nın Osmanlı ile rekabeti ne kadar sürmüştür?", options: ["50 yıl", "100 yıl", "200 yıl civarı", "300 yıl", "400 yıl"], correct: 2 },
+            { question: "Anadolu beyliklerinin çoğu hangi devletin yıkılmasından sonra kurulmuştur?", options: ["Bizans İmparatorluğu", "Anadolu Selçuklu Devleti", "İlhanlı Devleti", "Abbasi Devleti", "Emevi Devleti"], correct: 1 },
+            { question: "Selçuklu başkenti Konya'yı hangi beylik almıştır?", options: ["Osmanlı", "Karamanoğulları", "Germiyanoğulları", "Eretna", "Dulkadiroğulları"], correct: 1 },
+            { question: "Tek kubbeli cami mimarisinin öncüsü hangi beylik olmuştur?", options: ["Karamanoğulları", "Karesioğulları", "Germiyanoğulları", "Saruhanoğulları", "Dulkadiroğulları"], correct: 1 },
+            { question: "Zamantı Köprüsü hangi beylik tarafından yapılmıştır?", options: ["Karamanoğulları", "Dulkadiroğulları", "Ramazanoğulları", "Karesioğulları", "Germiyanoğulları"], correct: 1 },
+            { question: "Anadolu beyliklerinde medreselerin yaygınlaşmasının temel nedeni nedir?", options: ["Ticaret gelirlerinin artması", "İslami eğitimin yayılması", "Bizans'a karşı ideolojik mücadele", "Moğol baskısı", "Nüfus artışı"], correct: 1 },
+            { question: "Kütahya hangi beyliğin başkentidir?", options: ["Karesioğulları", "Germiyanoğulları", "Saruhanoğulları", "Teke", "Hamidoğulları"], correct: 1 },
+            { question: "Balıkesir hangi beyliğin merkezi olmuştur?", options: ["Karesioğulları", "Saruhanoğulları", "Germiyanoğulları", "Aydınoğulları", "Menteşeoğulları"], correct: 0 },
+            { question: "Anadolu beyliklerinin hemen hepsi hangi döneme aittir?", options: ["12. yüzyıl", "13-14. yüzyıl", "15. yüzyıl", "16. yüzyıl", "17. yüzyıl"], correct: 1 },
+            { question: "Beylikler döneminde hangi sanat dalı gelişmemiştir?", options: ["Mimari", "Çini", "Ahşap işçiliği", "Opera", "Minyatür"], correct: 3 },
+            { question: "Taş işçiliğinde 'ablak tekniği' hangi beylikte görülür?", options: ["Karamanoğulları", "Dulkadiroğulları", "Germiyanoğulları", "Karesioğulları", "Saruhanoğulları"], correct: 1 },
+            { question: "Ablak tekniği neyi ifade eder?", options: ["Ahşap oyma", "Siyah-beyaz taş sıraları", "Çini süsleme", "Kalem işi", "Mermer kakma"], correct: 1 },
+            { question: "Osmanlı İznik çinilerinin temeli hangi beylikte atılmıştır?", options: ["Karamanoğulları", "Germiyanoğulları", "Saruhanoğulları", "Karesioğulları", "Dulkadiroğulları"], correct: 1 },
+            { question: "Ege bölgesinde denizcilik yapan beylikler hangileridir?", options: ["Karamanoğulları ve Dulkadiroğulları", "Saruhanoğulları ve Karesioğulları", "Germiyanoğulları ve Eretna", "Candaroğulları ve Hacı Emiroğulları", "Teke ve Hamidoğulları"], correct: 1 },
+            { question: "Karamanoğulları'nın en önemli özelliği nedir?", options: ["Denizcilik", "Türkçe dil politikası", "Ticaret", "Çini sanatı", "Ahşap işçiliği"], correct: 1 },
+            { question: "Dulkadiroğulları ne zaman Osmanlı'ya katılmıştır?", options: ["1400", "1450", "1487", "1522", "1550"], correct: 3 },
+            { question: "Saruhanoğulları ne zaman Osmanlı'ya katılmıştır?", options: ["1390", "1410", "1430", "1450", "1470"], correct: 1 },
+            { question: "Germiyanoğulları ne zaman Osmanlı'ya katılmıştır?", options: ["1390", "1410", "1429", "1450", "1470"], correct: 2 },
+            { question: "Karamanoğulları ne zaman Osmanlı'ya katılmıştır?", options: ["1450", "1467", "1487", "1500", "1520"], correct: 2 },
+            { question: "Anadolu beyliklerinin Osmanlı'ya katılma süreci ne kadardır?", options: ["50 yıl", "100 yıl", "150 yıl civarı", "200 yıl", "250 yıl"], correct: 2 },
+            { question: "Osmanlı'nın en uzun süreli rakibi hangi beylik olmuştur?", options: ["Dulkadiroğulları", "Karamanoğulları", "Candaroğulları", "Germiyanoğulları", "Karesioğulları"], correct: 1 },
+            { question: "Beylikler döneminde 'taç kapı' nerede kullanılırdı?", options: ["Camiler", "Medreseler", "Saraylar", "Köprüler", "Hamamlar"], correct: 1 },
+            { question: "Ermenek Tol Medresesi hangi beyliğe aittir?", options: ["Karamanoğulları", "Germiyanoğulları", "Dulkadiroğulları", "Eretna", "Candaroğulları"], correct: 0 },
+            { question: "Anadolu beyliklerinde 'külliye' kavramı ne anlama gelir?", options: ["Tek yapı", "Sosyal kompleks (cami+medrese+imaret vb.)", "Sadece cami", "Sadece medrese", "Ticaret merkezi"], correct: 1 },
+            { question: "Beylikler döneminde 'kervansaray' hangi amaçla yapılırdı?", options: ["İbadet", "Eğitim", "Ticaret yollarında konaklama", "Savunma", "Yönetim"], correct: 2 },
+            { question: "İpek Yolu üzerinde hangi beylik önemli konumdaydı?", options: ["Saruhanoğulları", "Germiyanoğulları", "Menteşeoğulları", "Karesioğulları", "Teke"], correct: 1 },
+            { question: "Fırat Nehri üzerinde köprü yapan beylik hangisidir?", options: ["Karamanoğulları", "Dulkadiroğulları", "Ramazanoğulları", "Akkoyunlular", "Karakoyunlular"], correct: 1 },
+            { question: "Anadolu beyliklerinin ortak mimari özelliği nedir?", options: ["Gotik tarzı", "Barok tarzı", "Selçuklu geleneğinin devamı", "Bizans tarzı", "Rönesans tarzı"], correct: 2 },
+            { question: "Beylik döneminde 'imaret' ne işe yarardı?", options: ["Askeri eğitim", "Fakir yemek yedirilmesi", "Ticaret", "İbadet", "Konaklama"], correct: 1 },
+            { question: "Karamanoğulları'nın kültürel prestiji nereden geliyordu?", options: ["Denizcilik", "Selçuklu başkenti Konya'yı almaları", "Zengin madenler", "Ticaret", "Çini üretimi"], correct: 1 }
         ];
 
-        let currentIdx = 0;
+        let curQ = 0;
         let corrects = 0;
         let wrongs = 0;
-        let isMuted = true;
+        let answered = false;
 
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
-        const cardContainer = document.getElementById('cardContainer');
-        const bgMusic = document.getElementById('bgMusic');
-        const correctSound = document.getElementById('correctSound');
-        const wrongSound = document.getElementById('wrongSound');
+        const container = document.getElementById('quizContainer');
+        const bgm = document.getElementById('bgm');
+        const sfxC = document.getElementById('sfxC');
+        const sfxW = document.getElementById('sfxW');
+        const mBtn = document.getElementById('mBtn');
 
         function toggleMenu() {
             sidebar.classList.toggle('active');
             overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
         }
 
-        document.getElementById('musicToggle').addEventListener('click', () => {
-            if (isMuted) { bgMusic.play(); document.getElementById('musicToggle').textContent = '🔇'; }
-            else { bgMusic.pause(); document.getElementById('musicToggle').textContent = '🎵'; }
-            isMuted = !isMuted;
+        let isMusicOn = false;
+        function playBGM() { bgm.play(); mBtn.textContent = '🔇'; isMusicOn = true; }
+        mBtn.addEventListener('click', () => {
+            if (isMusicOn) { bgm.pause(); mBtn.textContent = '🎵'; }
+            else { playBGM(); }
+            isMusicOn = !isMusicOn;
         });
 
-        function showQuestion() {
-            const q = questions[currentIdx];
-            cardContainer.innerHTML = `
+        // İLK TIKLAMA İLE SESLERİ AKTİF ET (Tarayıcı gereksinimi)
+        window.addEventListener('click', () => { if(!isMusicOn) playBGM(); }, { once: true });
+
+        function updateSidebar() {
+            document.getElementById('cCount').textContent = corrects;
+            document.getElementById('wCount').textContent = wrongs;
+            document.getElementById('qStatus').textContent = `Soru: ${curQ + 1} / ${questions.length}`;
+            document.getElementById('pBar').style.width = ((curQ + 1) / questions.length * 100) + '%';
+        }
+
+        function createCard() {
+            answered = false;
+            const q = questions[curQ];
+            container.innerHTML = `
                 <div class="card" id="qCard">
                     <div class="question-text">${q.question}</div>
                     <div class="options">
-                        ${q.options.map((opt, i) => `<div class="option" onclick="handleChoice(${i})"><b>${String.fromCharCode(65+i)}</b> &nbsp; ${opt}</div>`).join('')}
+                        ${q.options.map((opt, i) => `
+                            <div class="option" onclick="handlePick(${i})">
+                                <b>${String.fromCharCode(65+i)}</b> &nbsp; ${opt}
+                            </div>
+                        `).join('')}
                     </div>
-                    <div class="next-button-container" id="nextBtnBox">
-                        <button class="next-button" onclick="nextStep()">Sonraki Soru</button>
+                    <div class="next-btn-box" id="nextBox">
+                        <button class="next-button" onclick="goNext()">Sonraki Soru →</button>
                     </div>
                 </div>
             `;
-            document.getElementById('questionProgress').textContent = `Soru ${currentIdx + 1} / ${questions.length}`;
+            updateSidebar();
         }
 
-        function handleChoice(idx) {
-            const q = questions[currentIdx];
+        function handlePick(idx) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[curQ];
             const card = document.getElementById('qCard');
-            const options = document.querySelectorAll('.option');
-            
-            // ZOOM ETKİSİ BAŞLAT
-            card.classList.add('zoom-effect');
-            
-            options.forEach(o => o.classList.add('disabled'));
+            const opts = card.querySelectorAll('.option');
+
+            // İSTEDİĞİN YAKLAŞMA ETKİSİ
+            card.classList.add('zoom-in');
+
+            opts.forEach(o => o.classList.add('disabled'));
 
             if (idx === q.correct) {
-                options[idx].classList.add('reveal-correct');
-                correctSound.play();
+                opts[idx].classList.add('correct-choice');
+                sfxC.play(); // DOĞRU SESİ
                 corrects++;
             } else {
-                options[idx].classList.add('reveal-wrong');
-                options[q.correct].classList.add('reveal-correct');
-                wrongSound.play();
+                opts[idx].classList.add('wrong-choice');
+                opts[q.correct].classList.add('correct-choice');
+                sfxW.play(); // YANLIŞ SESİ
                 wrongs++;
-                // TİTREME ETKİSİ BAŞLAT
+                // İSTEDİĞİN TİTREME ETKİSİ
                 card.classList.add('shake-effect');
             }
 
-            document.getElementById('correctCount').textContent = corrects;
-            document.getElementById('wrongCount').textContent = wrongs;
-            document.getElementById('nextBtnBox').classList.add('show');
+            updateSidebar();
+            document.getElementById('nextBox').classList.add('show');
         }
 
-        function nextStep() {
-            currentIdx++;
-            if (currentIdx < questions.length) showQuestion();
-            else alert("Quiz bitti!");
+        function goNext() {
+            curQ++;
+            if (curQ < questions.length) {
+                createCard();
+            } else {
+                container.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <h2 style="color:var(--correct); margin-bottom:20px;">Quiz Bitti! 🏆</h2>
+                        <p style="font-size:1.2rem; margin-bottom:10px;">Doğru: ${corrects}</p>
+                        <p style="font-size:1.2rem; margin-bottom:10px;">Yanlış: ${wrongs}</p>
+                        <p style="font-size:1.5rem; color:var(--accent); font-weight:700;">Başarı: %${Math.round(corrects/questions.length*100)}</p>
+                        <button class="next-button" onclick="location.reload()" style="margin-top:20px; float:none;">Yeniden Başla</button>
+                    </div>
+                `;
+            }
         }
 
-        showQuestion();
+        createCard();
     </script>
 </body>
 </html>
