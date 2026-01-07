@@ -6,6 +6,7 @@
     <title>Türk Kültür Tarihi - Interaktif Quiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* MEVCUT TASARIMININ DEVAMI */
         * {
             margin: 0;
             padding: 0;
@@ -33,6 +34,45 @@
             position: relative;
         }
 
+        /* --- MÜZİK BUTONU STİLİ --- */
+        .audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .music-btn {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .music-btn:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .music-btn.playing {
+            border-color: var(--correct);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        /* Arka plan efektleri (mevcut kodun) */
         body::before {
             content: '';
             position: fixed;
@@ -346,108 +386,37 @@
             box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
         }
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes slideRight {
-            to {
-                transform: translateX(120%) rotate(15deg);
-                opacity: 0;
-            }
-        }
-
-        @keyframes slideLeft {
-            to {
-                transform: translateX(-120%) rotate(-15deg);
-                opacity: 0;
-            }
-        }
-
-        @keyframes pulseGreen {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.03);
-                box-shadow: 0 0 40px rgba(78, 205, 196, 0.8);
-            }
-        }
-
-        @keyframes shakeWrong {
-            0%, 100% {
-                transform: translateX(0);
-            }
-            20%, 60% {
-                transform: translateX(-8px);
-            }
-            40%, 80% {
-                transform: translateX(8px);
-            }
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+        /* Animasyonlar */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes slideRight { to { transform: translateX(120%) rotate(15deg); opacity: 0; } }
+        @keyframes slideLeft { to { transform: translateX(-120%) rotate(-15deg); opacity: 0; } }
+        @keyframes pulseGreen { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); box-shadow: 0 0 40px rgba(78, 205, 196, 0.8); } }
+        @keyframes shakeWrong { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .card {
-                padding: 30px 20px;
-            }
-            
-            .question-text {
-                font-size: 1.3rem;
-            }
-            
-            .results {
-                padding: 30px 20px;
-            }
-            
-            .results-stats {
-                grid-template-columns: 1fr;
-            }
+            .header h1 { font-size: 2rem; }
+            .card { padding: 30px 20px; }
+            .question-text { font-size: 1.3rem; }
+            .results { padding: 30px 20px; }
+            .results-stats { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <div class="audio-controls">
+        <button id="musicToggle" class="music-btn">
+            <span id="musicIcon">🎵</span>
+            <span id="musicText">Müziği Başlat</span>
+        </button>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container">
         <div class="header">
             <h1>Türk Kültür Tarihi</h1>
@@ -473,9 +442,7 @@
             </div>
         </div>
 
-        <div class="card-container" id="cardContainer">
-            <!-- Kartlar buraya dinamik olarak eklenecek -->
-        </div>
+        <div class="card-container" id="cardContainer"></div>
 
         <div class="next-button-container" id="nextButtonContainer">
             <button class="next-button" id="nextButton">Sonraki Soru →</button>
@@ -483,6 +450,28 @@
     </div>
 
     <script>
+        // Müzik Kontrol Kodları
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicToggle');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicText = document.getElementById('musicText');
+        let isPlaying = false;
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                music.pause();
+                musicIcon.textContent = '🎵';
+                musicText.textContent = 'Müziği Başlat';
+                musicBtn.classList.remove('playing');
+            } else {
+                music.play().catch(e => console.log("Oynatma hatası: Tarayıcı engelledi."));
+                musicIcon.textContent = '🔇';
+                musicText.textContent = 'Müziği Durdur';
+                musicBtn.classList.add('playing');
+            }
+            isPlaying = !isPlaying;
+        });
+
         const questions = [
             {
                 question: "Türklerin İslamiyet öncesi inandıkları din hangisidir?",
@@ -533,8 +522,7 @@
                 question: "Türkler İslamiyet'i kabul etmeden önce hangi ticaret yolunu kontrol edemiyorlardı?",
                 options: ["İpek Yolu", "Kürk Yolu", "Orman Yolu", "Step Yolu", "Baharat Yolu"],
                 correct: 0
-            },
-            // ... (Diğer 90 soru - önceki quiz'deki soruları buraya ekle)
+            }
         ];
 
         let currentQuestionIndex = 0;
@@ -578,36 +566,24 @@
 
         function handleOptionClick(clickedOption, allOptions, card, question) {
             if (isAnswered) return;
-
-            // Remove previous selection
             allOptions.forEach(opt => opt.classList.remove('selected'));
-            
-            // Select current
             clickedOption.classList.add('selected');
             selectedOption = parseInt(clickedOption.dataset.index);
 
-            // Zoom in animation (SLOW)
             setTimeout(() => {
                 card.classList.add('zoom-in');
-                
-                // Reveal answer after zoom (SLOW)
                 setTimeout(() => {
                     revealAnswer(allOptions, question);
-                }, 800); // Slow transition
+                }, 800);
             }, 300);
         }
 
         function revealAnswer(allOptions, question) {
             isAnswered = true;
             const isCorrect = selectedOption === question.correct;
-
-            // Disable all options
             allOptions.forEach(opt => opt.classList.add('disabled'));
-
-            // Show correct answer (SLOW animation)
             allOptions[question.correct].classList.add('reveal-correct');
 
-            // Show wrong answer if wrong
             if (!isCorrect) {
                 allOptions[selectedOption].classList.add('reveal-wrong');
                 wrongAnswers++;
@@ -616,8 +592,6 @@
             }
 
             updateProgress();
-
-            // Show next button (SLOW)
             setTimeout(() => {
                 document.getElementById('nextButtonContainer').classList.add('show');
             }, 1200);
@@ -634,19 +608,14 @@
         function nextQuestion() {
             const card = document.querySelector('.card');
             const nextButtonContainer = document.getElementById('nextButtonContainer');
-            
-            // Hide button
             nextButtonContainer.classList.remove('show');
 
-            // Slide card based on correct/wrong
             const isCorrect = selectedOption === questions[currentQuestionIndex].correct;
             card.classList.add(isCorrect ? 'slide-right' : 'slide-left');
 
-            // Wait for animation, then show next
             setTimeout(() => {
                 card.remove();
                 currentQuestionIndex++;
-
                 if (currentQuestionIndex < questions.length) {
                     showQuestion();
                 } else {
@@ -658,7 +627,6 @@
         function showResults() {
             const percentage = Math.round((correctAnswers / questions.length) * 100);
             const container = document.getElementById('cardContainer');
-            
             container.innerHTML = `
                 <div class="results">
                     <h2>Quiz Tamamlandı! 🎉</h2>
@@ -681,7 +649,6 @@
             `;
         }
 
-        // Initialize
         updateProgress();
         showQuestion();
         document.getElementById('nextButton').addEventListener('click', nextQuestion);
