@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Türk Kültür Tarihi - 100 Soru</title>
+    <title>Türk Kültür Tarihi - İnteraktif Öğrenme</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,9 +11,7 @@
             --bg-primary: #0a0e27;
             --bg-secondary: #1a1f3a;
             --accent: #ff6b6b;
-            --accent-light: #ffa07a;
             --text: #e0e6ed;
-            --text-dim: #8892a6;
             --correct: #4ecdc4;
             --wrong: #ff6b6b;
         }
@@ -23,107 +21,121 @@
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            overflow-x: hidden;
-        }
-
-        /* --- SIDEBAR (Gemini Stili) --- */
-        .sidebar {
-            position: fixed;
-            left: -320px;
-            top: 0;
-            width: 300px;
-            height: 100%;
-            background: var(--bg-secondary);
-            z-index: 2000;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 30px 20px;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
         }
-        .sidebar.active { left: 0; }
-        .sidebar-header h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 20px; }
 
-        /* Üst Çubuk */
-        .top-bar { position: fixed; top: 0; left: 0; padding: 15px 20px; z-index: 1500; width: 100%; display: flex; align-items: center; }
-        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; width: 30px; }
-        .hamburger span { display: block; width: 100%; height: 3px; background: var(--text); border-radius: 2px; }
+        /* --- ÜST VE ALT KUTULAR (KÜÇÜLTÜLMÜŞ) --- */
+        .target-box {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            height: 80px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            z-index: 5;
+            transition: 0.3s;
+        }
+        /* Yanlışlar Üstte */
+        .box-top { top: 20px; border-color: var(--wrong); }
+        /* Doğrular Altta */
+        .box-bottom { bottom: 20px; border-color: var(--correct); }
+        
+        .box-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 2px; opacity: 0.6; }
+        .box-count { font-size: 1.8rem; font-weight: 700; font-family: 'Space Mono'; }
 
-        /* Ana Konteyner */
-        .container { width: 100%; max-width: 650px; margin-top: 80px; padding: 20px; perspective: 1000px; }
-
-        /* --- KART VE ANİMASYONLAR --- */
+        /* --- ANA QUIZ ALANI --- */
+        .container { width: 100%; max-width: 550px; padding: 20px; z-index: 10; position: relative; }
         .card {
             background: var(--bg-secondary);
             border-radius: 24px;
-            padding: 35px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* YAVAŞ YAKLAŞMA SÜRESİ */
-            position: relative;
+            padding: 30px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center;
         }
 
-        /* İSTEDİĞİN YAKLAŞMA (ZOOM) ETKİSİ */
-        .zoom-in { transform: scale(1.1) translateZ(50px); }
-
-        /* İSTEDİĞİN TİTREME ANİMASYONU */
+        /* Efektler */
+        .zoom-active { transform: scale(1.08); }
         @keyframes shake {
-            0%, 100% { transform: scale(1.1) translateX(0); }
-            20% { transform: scale(1.1) translateX(-15px); }
-            40% { transform: scale(1.1) translateX(15px); }
-            60% { transform: scale(1.1) translateX(-15px); }
-            80% { transform: scale(1.1) translateX(15px); }
+            0%, 100% { transform: scale(1.08) translateX(0); }
+            20%, 60% { transform: scale(1.08) translateX(-10px); }
+            40%, 80% { transform: scale(1.08) translateX(10px); }
         }
-        .shake-effect { animation: shake 0.5s ease-in-out; }
+        .shake-active { animation: shake 0.4s ease; }
 
-        .question-text { font-size: 1.35rem; margin-bottom: 25px; font-weight: 700; line-height: 1.5; }
-        .options { display: flex; flex-direction: column; gap: 10px; }
+        /* UÇMA ANİMASYONLARI (ÜSTE VE ALTA) */
+        .fly-up { transform: translateY(-400px) scale(0); opacity: 0; }
+        .fly-down { transform: translateY(400px) scale(0); opacity: 0; }
+
+        .question-text { font-size: 1.3rem; margin-bottom: 25px; font-weight: 700; line-height: 1.4; text-align: center; }
         .option {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.05);
             border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 16px 20px;
+            border-radius: 12px;
+            padding: 15px 20px;
             cursor: pointer;
-            transition: 0.3s;
+            margin-bottom: 10px;
+            transition: 0.2s;
             display: flex; align-items: center; gap: 12px;
         }
-        .option.correct-choice { background: var(--correct) !important; color: #0a0e27; font-weight: 700; }
-        .option.wrong-choice { background: var(--wrong) !important; color: white; }
-        .option.disabled { pointer-events: none; opacity: 0.7; }
+        .option.correct-ui { background: var(--correct) !important; color: #0a0e27; font-weight: 700; }
+        .option.wrong-ui { background: var(--wrong) !important; color: white; }
+        .option.disabled { pointer-events: none; }
 
-        .next-btn-box { margin-top: 25px; text-align: right; display: none; }
-        .next-btn-box.show { display: block; }
-        .next-button { background: var(--accent); border: none; padding: 12px 30px; color: white; border-radius: 10px; cursor: pointer; font-weight: 700; }
+        .next-btn {
+            background: var(--accent); border: none; padding: 12px 30px; 
+            color: white; border-radius: 10px; cursor: pointer; font-weight: 700;
+            display: none; margin: 15px 0 0 auto; font-family: 'Space Mono';
+        }
 
-        .audio-controls { position: fixed; top: 15px; right: 20px; z-index: 1501; }
-        .music-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--accent); background: none; color: white; cursor: pointer; }
-        
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1900; }
+        /* Sidebar ve Üst Bar */
+        .top-bar { position: fixed; top: 0; left: 0; padding: 20px; z-index: 100; }
+        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; }
+        .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: var(--bg-secondary); z-index: 2000; transition: 0.4s; padding: 40px 30px; }
+        .sidebar.active { left: 0; }
+        .audio-controls { position: fixed; top: 20px; right: 20px; z-index: 100; }
     </style>
 </head>
 <body>
 
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+    <div class="target-box box-top">
+        <div class="box-label">YANLIŞLAR</div>
+        <div class="box-count" id="wrongCount">0</div>
+    </div>
+
+    <div class="target-box box-bottom">
+        <div class="box-label">DOĞRULAR</div>
+        <div class="box-count" id="correctCount">0</div>
+    </div>
 
     <div class="top-bar">
-        <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+        <div class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
     </div>
 
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><h1>İstatistikler</h1></div>
-        <div style="font-family:'Space Mono';">
-            <p style="color:var(--correct); margin-bottom:10px;">Doğru: <span id="cCount">0</span></p>
-            <p style="color:var(--wrong); margin-bottom:20px;">Yanlış: <span id="wCount">0</span></p>
-            <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-bottom:10px;">
-                <div id="pBar" style="background:var(--accent); height:100%; width:0%; transition:0.3s;"></div>
-            </div>
-            <p id="qStatus" style="color:var(--text-dim); font-size:0.8rem;">Soru: 1 / 100</p>
+        <h2 style="color:var(--accent); margin-bottom:20px;">Öğrenme Takibi</h2>
+        <div style="font-family:'Space Mono'; font-size:0.9rem;">
+            <p id="roundStatus" style="color:var(--correct); margin-bottom:10px;">Mevcut Tur: 1</p>
+            <p id="remainingStatus">Kalan Soru: 100</p>
+            <p style="margin-top:20px; opacity:0.6; font-size:0.7rem;">Yanlış cevapladığınız sorular tur sonunda tekrar sorulacak.</p>
         </div>
     </div>
 
-    <div class="audio-controls"><button id="mBtn" class="music-btn">🎵</button></div>
+    <div class="audio-controls">
+        <button onclick="toggleMusic()" style="background:none; border:1px solid var(--accent); color:white; border-radius:50%; width:40px; height:40px; cursor:pointer;">🎵</button>
+    </div>
 
     <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
     <audio id="sfxC"><source src="https://actions.google.com/sounds/v1/water/clinking_glasses.ogg"></audio>
@@ -132,7 +144,8 @@
     <div class="container" id="quizContainer"></div>
 
     <script>
-        const questions = [
+        // 100 Soruluk Veri Seti
+        const questionsDB = [
             { question: "Türklerin İslamiyet öncesi inandıkları din hangisidir?", options: ["Şamanizm", "Gök Tanrı (Tengri) İnancı", "Budizm", "Hristiyanlık", "Zerdüştlük"], correct: 1 },
             { question: "Talas Savaşı hangi yıl gerçekleşmiştir?", options: ["650", "751", "850", "950", "1050"], correct: 1 },
             { question: "Talas Savaşı'nda Türkler hangi tarafta yer almıştır?", options: ["Tang Hanedanı yanında", "Abbasiler yanında", "Tarafsız kalmışlardır", "Her iki tarafta da", "Bizans yanında"], correct: 1 },
@@ -235,111 +248,123 @@
             { question: "Karamanoğulları'nın kültürel prestiji nereden geliyordu?", options: ["Denizcilik", "Selçuklu başkenti Konya'yı almaları", "Zengin madenler", "Ticaret", "Çini üretimi"], correct: 1 }
         ];
 
-        let curQ = 0;
-        let corrects = 0;
-        let wrongs = 0;
-        let answered = false;
+        // Mantık Değişkenleri
+        let activePool = [...questionsDB];
+        let wrongPool = [];
+        let currentIdx = 0;
+        let cCount = 0;
+        let wCount = 0;
+        let round = 1;
+        let isAnswered = false;
+        let lastStatus = null;
 
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
         const container = document.getElementById('quizContainer');
         const bgm = document.getElementById('bgm');
         const sfxC = document.getElementById('sfxC');
         const sfxW = document.getElementById('sfxW');
-        const mBtn = document.getElementById('mBtn');
 
-        function toggleMenu() {
-            sidebar.classList.toggle('active');
-            overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
-        }
-
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        
         let isMusicOn = false;
-        function playBGM() { bgm.play(); mBtn.textContent = '🔇'; isMusicOn = true; }
-        mBtn.addEventListener('click', () => {
-            if (isMusicOn) { bgm.pause(); mBtn.textContent = '🎵'; }
-            else { playBGM(); }
-            isMusicOn = !isMusicOn;
-        });
-
-        // İLK TIKLAMA İLE SESLERİ AKTİF ET (Tarayıcı gereksinimi)
-        window.addEventListener('click', () => { if(!isMusicOn) playBGM(); }, { once: true });
-
-        function updateSidebar() {
-            document.getElementById('cCount').textContent = corrects;
-            document.getElementById('wCount').textContent = wrongs;
-            document.getElementById('qStatus').textContent = `Soru: ${curQ + 1} / ${questions.length}`;
-            document.getElementById('pBar').style.width = ((curQ + 1) / questions.length * 100) + '%';
+        function toggleMusic() {
+            if(isMusicOn) { bgm.pause(); isMusicOn = false; }
+            else { bgm.play(); isMusicOn = true; }
         }
 
-        function createCard() {
-            answered = false;
-            const q = questions[curQ];
+        function updateUI() {
+            document.getElementById('correctCount').textContent = cCount;
+            document.getElementById('wrongCount').textContent = wCount;
+            document.getElementById('roundStatus').textContent = `Tur: ${round}`;
+            document.getElementById('remainingStatus').textContent = `Kalan: ${activePool.length - currentIdx}`;
+        }
+
+        function showQuestion() {
+            isAnswered = false;
+            if (currentIdx >= activePool.length) {
+                checkEndOfRound();
+                return;
+            }
+
+            const q = activePool[currentIdx];
             container.innerHTML = `
                 <div class="card" id="qCard">
                     <div class="question-text">${q.question}</div>
                     <div class="options">
                         ${q.options.map((opt, i) => `
-                            <div class="option" onclick="handlePick(${i})">
+                            <div class="option" onclick="handleChoice(${i})">
                                 <b>${String.fromCharCode(65+i)}</b> &nbsp; ${opt}
                             </div>
                         `).join('')}
                     </div>
-                    <div class="next-btn-box" id="nextBox">
-                        <button class="next-button" onclick="goNext()">Sonraki Soru →</button>
-                    </div>
+                    <button class="next-btn" id="nextBtn" onclick="animateAndNext()">Sonraki Soru →</button>
                 </div>
             `;
-            updateSidebar();
+            updateUI();
         }
 
-        function handlePick(idx) {
-            if (answered) return;
-            answered = true;
+        function handleChoice(idx) {
+            if (isAnswered) return;
+            isAnswered = true;
 
-            const q = questions[curQ];
+            const q = activePool[currentIdx];
             const card = document.getElementById('qCard');
             const opts = card.querySelectorAll('.option');
 
-            // İSTEDİĞİN YAKLAŞMA ETKİSİ
-            card.classList.add('zoom-in');
-
+            card.classList.add('zoom-active');
             opts.forEach(o => o.classList.add('disabled'));
 
             if (idx === q.correct) {
-                opts[idx].classList.add('correct-choice');
-                sfxC.play(); // DOĞRU SESİ
-                corrects++;
+                opts[idx].classList.add('correct-ui');
+                sfxC.play();
+                lastStatus = 'correct';
+                cCount++;
             } else {
-                opts[idx].classList.add('wrong-choice');
-                opts[q.correct].classList.add('correct-choice');
-                sfxW.play(); // YANLIŞ SESİ
-                wrongs++;
-                // İSTEDİĞİN TİTREME ETKİSİ
-                card.classList.add('shake-effect');
+                opts[idx].classList.add('wrong-ui');
+                opts[q.correct].classList.add('correct-ui');
+                sfxW.play();
+                card.classList.add('shake-active');
+                lastStatus = 'wrong';
+                wrongPool.push(q);
+                wCount++;
             }
-
-            updateSidebar();
-            document.getElementById('nextBox').classList.add('show');
+            document.getElementById('nextBtn').style.display = 'block';
         }
 
-        function goNext() {
-            curQ++;
-            if (curQ < questions.length) {
-                createCard();
+        function animateAndNext() {
+            const card = document.getElementById('qCard');
+            card.classList.add(lastStatus === 'correct' ? 'fly-down' : 'fly-up');
+
+            setTimeout(() => {
+                currentIdx++;
+                showQuestion();
+            }, 700);
+        }
+
+        function checkEndOfRound() {
+            if (wrongPool.length > 0) {
+                activePool = [...wrongPool];
+                wrongPool = [];
+                currentIdx = 0;
+                round++;
+                alert(`${round-1}. Tur Bitti! Yanlış yaptığın ${activePool.length} soru tekrar sorulacak.`);
+                showQuestion();
             } else {
-                container.innerHTML = `
-                    <div class="card" style="text-align:center;">
-                        <h2 style="color:var(--correct); margin-bottom:20px;">Quiz Bitti! 🏆</h2>
-                        <p style="font-size:1.2rem; margin-bottom:10px;">Doğru: ${corrects}</p>
-                        <p style="font-size:1.2rem; margin-bottom:10px;">Yanlış: ${wrongs}</p>
-                        <p style="font-size:1.5rem; color:var(--accent); font-weight:700;">Başarı: %${Math.round(corrects/questions.length*100)}</p>
-                        <button class="next-button" onclick="location.reload()" style="margin-top:20px; float:none;">Yeniden Başla</button>
-                    </div>
-                `;
+                showFinal();
             }
         }
 
-        createCard();
+        function showFinal() {
+            container.innerHTML = `
+                <div class="card" style="text-align:center;">
+                    <h1 style="color:var(--correct); font-size:2.5rem; margin-bottom:20px;">BRAVO! 🎉</h1>
+                    <p style="font-size:1.2rem;">Hepsini doğru cevaplayarak tamamladınız.</p>
+                    <p style="margin-top:20px; font-family:'Space Mono'; opacity:0.6;">Toplam Tur: ${round}</p>
+                    <button class="next-btn" style="display:inline-block; margin-top:30px; float:none;" onclick="location.reload()">Sıfırla</button>
+                </div>
+            `;
+        }
+
+        showQuestion();
     </script>
 </body>
 </html>
